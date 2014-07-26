@@ -1,0 +1,23 @@
+<html>
+<head>
+    <title>{{getPreparedTitle}}</title>
+    {{#addMeta}}{{/addMeta}}
+    {{#addStyles}}
+        "/styles/style.css"
+    {{/addStyles}}
+</head>
+<body>
+    <img src="/images/logo.gif" />
+    <ul>
+        {{#eachInCollection 'pages' ~}}
+            <li class="{{#is id @outerScope.document.id}}active{{else}}inactive{{/is}}"><a href="{{url}}">{{title}}</a></li>
+        {{~/eachInCollection}}
+    </ul>
+    <h1>{{document.title}}</h1>
+    {{{content}}}
+    {{#addScripts}}
+        "/bower_components/jquery/dist/jquery.js"
+        "/scripts/script.js"
+    {{/addScripts}}
+</body>
+</html>

@@ -1,3 +1,5 @@
+node_modules
+src/static/bower_components
 out
 .idea
 .DS_Store
