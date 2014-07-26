@@ -3,7 +3,12 @@ title: "Welcome!"
 layout: "default"
 isPage: true
 name: "Smorgan"
+inputParams:
+    type: number
+    classes: "red black"
 ---
 
 <p>Welcome to My Website!</p>
 {{> hello }}
+
+{{> inputs/input document.inputParams }}

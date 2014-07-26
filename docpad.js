@@ -159,32 +159,58 @@ var addHandlebarsPartials = function (docpadConfig, partialsDir) {
   partialsDir = partialsDir || './src/partials';
   partialsDir = path.resolve(partialsDir);
 
-
   docpadConfig.plugins = docpadConfig.plugins || {};
   docpadConfig.plugins.handlebars = docpadConfig.plugins.handlebars || {};
   hbsPartials = docpadConfig.plugins.handlebars.partials = docpadConfig.plugins.handlebars.partials || {};
 
-  // Today we do quick and dirty
-  var partialsFiles = _.map(fs.readdirSync(partialsDir), function (fileName) {
-    return path.join(partialsDir, fileName);
-  });
+  var getFullPath = function (dirName) {
+    return function (fileName) {
+      return path.join(dirName, fileName);
+    };
+  };
 
-  _.forEach(partialsFiles, function (fileName) {
+  var readDir = function (dirName) {
+    return _.map(fs.readdirSync(dirName), getFullPath(dirName));
+  };
+
+  var isDir = function (fileName) {
+    return fs.statSync(fileName).isDirectory();
+  };
+
+  var isFile = function (fileName) {
+    return fs.statSync(fileName).isFile();
+  };
+
+  var getPartialName = function (fileName) {
     var pattern = /\.hbs$/,
-      baseName = path.basename(fileName),
-      partialName = baseName.slice(0, baseName.search(pattern));
-    hbsPartials[partialName] = fs.readFileSync(fileName).toString();
-  });
+      relativeFileName = path.relative(partialsDir, fileName),
+      partialName = relativeFileName.slice(0, relativeFileName.search(pattern));
+    return partialName;
+  };
 
-  console.log('\nhbsPartials:');
-  console.log(hbsPartials);
+  var readFile = function (fileName) {
+    return fs.readFileSync(fileName).toString();
+  };
+
+  var processFile = function (fileName) {
+    hbsPartials[getPartialName(fileName)] = readFile(fileName);
+  };
+
+  var processDir = function (dirName) {
+    var dirContents = readDir(dirName),
+      files = _.filter(dirContents, isFile),
+      dirs = _.filter(dirContents, isDir);
+    _.forEach(files, processFile);
+    _.forEach(dirs, processDir);
+  };
+
+  processDir(partialsDir);
+
 };
 
 
 (function() {
   var docpadConfig;
-
-//  console.log('I AM RUNNING!!!!');
 
   docpadConfig = {
     templateData: {
@@ -198,15 +224,6 @@ var addHandlebarsPartials = function (docpadConfig, partialsDir) {
           return this.site.title;
         }
       }
-//      ,
-//      showContent: function () {
-//        return this.content;
-//      }
-//      ,
-//      testPoop: function () {
-//        return 'POOOOOOP!!!!';
-//      }
-
     },
     collections: {
       pages: function() {
