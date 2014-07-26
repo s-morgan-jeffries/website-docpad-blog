@@ -1,8 +1,6 @@
 'use strict';
 
 var _ = require('lodash');
-//var hbsHelpers = require('handlebars-helpers');
-//console.log(_.keys(hbsHelpers));
 
 var addHandlebarsHelpers = function (docpadConfig) {
 
@@ -154,6 +152,34 @@ var addHandlebarsHelpers = function (docpadConfig) {
   });
 };
 
+var addHandlebarsPartials = function (docpadConfig, partialsDir) {
+  var fs = require('fs'),
+    path = require('path'),
+    hbsPartials;
+  partialsDir = partialsDir || './src/partials';
+  partialsDir = path.resolve(partialsDir);
+
+
+  docpadConfig.plugins = docpadConfig.plugins || {};
+  docpadConfig.plugins.handlebars = docpadConfig.plugins.handlebars || {};
+  hbsPartials = docpadConfig.plugins.handlebars.partials = docpadConfig.plugins.handlebars.partials || {};
+
+  // Today we do quick and dirty
+  var partialsFiles = _.map(fs.readdirSync(partialsDir), function (fileName) {
+    return path.join(partialsDir, fileName);
+  });
+
+  _.forEach(partialsFiles, function (fileName) {
+    var pattern = /\.hbs$/,
+      baseName = path.basename(fileName),
+      partialName = baseName.slice(0, baseName.search(pattern));
+    hbsPartials[partialName] = fs.readFileSync(fileName).toString();
+  });
+
+  console.log('\nhbsPartials:');
+  console.log(hbsPartials);
+};
+
 
 (function() {
   var docpadConfig;
@@ -171,10 +197,15 @@ var addHandlebarsHelpers = function (docpadConfig) {
         } else {
           return this.site.title;
         }
-      },
-      testPoop: function () {
-        return 'POOOOOOP!!!!';
       }
+//      ,
+//      showContent: function () {
+//        return this.content;
+//      }
+//      ,
+//      testPoop: function () {
+//        return 'POOOOOOP!!!!';
+//      }
 
     },
     collections: {
@@ -196,6 +227,7 @@ var addHandlebarsHelpers = function (docpadConfig) {
   };
 
   addHandlebarsHelpers(docpadConfig);
+  addHandlebarsPartials(docpadConfig);
 
   module.exports = docpadConfig;
 
